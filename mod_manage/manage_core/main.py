@@ -1,27 +1,58 @@
 import sys
 
-log_system, config = None, None
+global log_system, config
 
 
 def _start_cli_program() -> None:
+    from mod_manage import i18n, t
+    if not config.language:
+        match input("Press Language: [ZH_CN/en_us] "):
+            case "zh_cn":
+                lang = "zh_cn"
+            case "en_us":
+                lang = "en_us"
+            case "":
+                lang = "zh_cn"
+            case _:
+                log_system.warning("Unknown Language!")
+                return
+        config.language = lang
+        i18n.set_language(lang)
+        config.save()
+        log_system.info(t("welcome.choose_language"))
+    else:
+        i18n.set_language(config.language)
+    log_system.info(t("welcome.welcome_cli"))
     while True:
-        pass
+        log_system.info(t("cli.menu"))
+        match input(t("cli.wait_press")):
+            case 1:
+                match input(t("cli.ref_menu")):
+                    case _:
+                        log_system.warning(t("cli.unknown_num"))
+            case _:
+                log_system.warning(t("cli.unknown_num"))
 
 
-def main(debug: bool, core: bool = False) -> None:
+def get_help() -> None:
+    pass
+
+
+def main(core: bool = False) -> None:
     """核心主程序"""
+    from mod_manage import GlobalContext
+
     global log_system, config
-    from mod_manage import get_variable
 
-    log_system = get_variable("log_system")
-    config = get_variable("config")
+    log_system = GlobalContext.get_logger()
+    config = GlobalContext.get_config()
 
-    log_system.logger.info("Core Started.")
-    log_system.logger.debug("Debug Mode ON")
+    log_system.info("Core Started.")
+    log_system.debug("Debug information is being displayed.")
 
     if core:
         try:
             _start_cli_program()
         except KeyboardInterrupt:
-            log_system.logger.info("Core Exited.")
+            log_system.info("Core Exited.")
             sys.exit(0)

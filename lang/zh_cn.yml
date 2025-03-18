@@ -1,0 +1,19 @@
+welcome:
+  choose_language: "已选择中文..."
+  welcome_cli: "怪物猎人：荒野 模组管理器 命令行版本正在启动..."
+
+cli:
+  wait_press: "等待输入命令（数字）："
+  unknown_num: "未知的命令！"
+  menu: | 
+    ==菜单==
+    1. REFramework 管理
+    2. 游戏路径管理
+    3. Nexus 管理
+    4. Mod 管理
+  ref_menu: |
+    ==REFramework 管理==
+    1. 获取版本列表
+    2. 安装
+    3. 更新
+    4. 卸载

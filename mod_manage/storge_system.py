@@ -1,218 +1,169 @@
-import json
-import os
-import shutil
+import yaml
 from pathlib import Path
-from typing import Any, Dict, Optional, Type
-import tempfile
+from typing import Dict, Any, Type, TypeVar, get_origin, get_args
+
+T = TypeVar("T", bound="BaseConfig")
 
 
 class ConfigError(Exception):
-    """配置文件异常基类"""
+    """配置相关异常基类"""
 
-    pass
+
+class ConfigTypeError(ConfigError):
+    """配置类型错误"""
 
 
 class ConfigValidationError(ConfigError):
-    """配置校验失败异常"""
-
-    pass
+    """配置验证失败"""
 
 
-class ConfigFileNotFound(ConfigError):
-    """配置文件不存在异常"""
+class BaseConfigMeta(type):
+    """元类用于收集配置字段信息"""
 
-    pass
+    def __new__(cls, name, bases, namespace):
+        # 收集类型注解和默认值
+        annotations = namespace.get("__annotations__", {})
+        fields = {}
+
+        for attr_name, attr_value in namespace.items():
+            if attr_name.startswith("_") or not isinstance(attr_value, Field):
+                continue
+
+            # 从Field对象中提取信息
+            field_info = {
+                "type": annotations.get(attr_name, type(attr_value.default)),
+                "default": attr_value.default,
+                "description": attr_value.description,
+            }
+            fields[attr_name] = field_info
+
+        # 创建类并保存字段信息
+        new_cls = super().__new__(cls, name, bases, namespace)
+        new_cls.__fields__ = fields
+        return new_cls
 
 
-class JSONConfig(object):
-    def __init__(
-        self,
-        file_path: str,
-        default_config: Optional[Dict] = None,
-        schema: Optional[Dict[str, Type]] = None,
-        version: str = "0"
-    ):
-        """
-        初始化配置管理器
+class Field:
+    """配置字段描述符"""
 
-        :param file_path: 配置文件路径
-        :param default_config: 默认配置（当文件不存在时自动创建）
-        :param schema: 配置校验模式字典 {key: type}
-        """
-        from mod_manage import get_variable
+    def __init__(self, default: Any, description: str = ""):
+        self.default = default
+        self.description = description
 
-        self.log_system = get_variable("log_system")
 
-        self.file_path = Path(file_path).expanduser().resolve()
-        self.default_config = default_config or {}
-        self.schema = schema or {}
-        self._data = {}
+class BaseConfig(metaclass=BaseConfigMeta):
+    __config_path__: str = "config.yml"
 
-        self.version = version
-        self._data["__version__"] = version
+    def __init__(self, **kwargs):
+        for name, field in self.__fields__.items():
+            value = kwargs.get(name, field["default"])
+            setattr(self, name, value)
 
-        # 自动创建父目录
-        self.file_path.parent.mkdir(parents=True, exist_ok=True)
+    @classmethod
+    def load(cls: Type[T]) -> T:
+        """从YAML加载配置"""
+        config_path = Path(cls.__config_path__)
 
-    def load(self) -> Dict:
-        """加载配置文件"""
-        try:
-            if not self.file_path.exists():
-                if self.default_config:
-                    self._data = self.default_config.copy()
-                    self._save()
-                    return self._data
-                raise ConfigFileNotFound(f"配置文件 {self.file_path} 不存在")
+        if not config_path.exists():
+            instance = cls()
+            instance.save()
+            return instance
 
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                self._data = json.load(f)
+        with open(config_path, "r", encoding="utf-8") as f:
+            raw_data = yaml.safe_load(f)
 
-            self._validate()
-            return self._data.copy()
-        except json.JSONDecodeError as e:
-            raise ConfigError(f"配置文件解析失败: {str(e)}") from e
+        return cls(**cls._validate_config(raw_data))
 
-    def save(self, custom_data: Optional[Dict] = None) -> None:
-        """保存配置文件（原子写入）"""
-        try:
-            data = custom_data or self._data
-            self._validate(data)
+    def save(self):
+        """保存为带注释的YAML"""
+        config_path = Path(self.__config_path__)
+        config_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # 使用临时文件实现原子写入
-            with tempfile.NamedTemporaryFile(
-                mode="w", dir=self.file_path.parent, delete=False, encoding="utf-8"
-            ) as tmp_file:
-                json.dump(data, tmp_file, indent=4, ensure_ascii=False)
+        yaml_data = self._generate_yaml_with_comments()
 
-            # 替换原文件
-            os.replace(tmp_file.name, self.file_path)
-        except (IOError, OSError) as e:
-            if tmp_file.name:
-                try:
-                    os.unlink(tmp_file.name)
-                except OSError:
-                    pass
-            raise ConfigError(f"保存配置文件失败: {str(e)}") from e
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(yaml_data)
 
-    def get(self, key: str, default: Any = None) -> Any:
-        """获取配置项（支持点分隔符）"""
-        keys = key.split(".")
-        value = self._data
-        try:
-            for k in keys:
-                value = value[k]
-            return value
-        except (KeyError, TypeError):
-            return default
+    def _generate_yaml_with_comments(self) -> str:
+        """生成带注释的YAML内容"""
+        lines = []
+        for name, field in self.__fields__.items():
+            # 添加注释
+            comment = field["description"].replace("\n", "\n# ")
+            lines.append(f"# {comment}")
 
-    def set(self, key: str, value: Any, auto_save: bool = False) -> None:
-        """设置配置项（支持点分隔符）"""
-        keys = key.split(".")
-        current = self._data
+            # 添加字段值
+            value = getattr(self, name)
+            yaml_line = yaml.dump(
+                {name: value}, default_flow_style=False, allow_unicode=True
+            ).strip()
+            lines.append(yaml_line)
 
-        for i, k in enumerate(keys[:-1]):
-            if k not in current:
-                current[k] = {}
-            current = current[k]
-            if not isinstance(current, dict):
-                raise ConfigError(f"无效的配置路径: {key}")
+        return "\n".join(lines)
 
-        last_key = keys[-1]
-        current[last_key] = value
+    @classmethod
+    def _validate_config(cls, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+        """验证并处理配置数据"""
+        validated = {}
 
-        if auto_save:
-            self.save()
+        for name, field_info in cls.__fields__.items():
+            # 获取用户设置的值或使用默认值
+            value = raw_data.get(name, field_info["default"])
 
-    def check_version(self):
-        """检查并执行版本迁移"""
-        file_version = self._data.get("__version__", "0")
+            # 类型验证
+            if not cls._check_type(value, field_info["type"]):
+                raise ConfigTypeError(
+                    f"字段 '{name}' 类型错误，应为 {field_info['type']}，实际为 {type(value)}"
+                )
 
-        if file_version != self.current_version:
-            self.log_system.logger.debug(
-                f"检测到配置版本变化 ({file_version} -> {self.current_version})"
+            validated[name] = value
+
+        return validated
+
+    @staticmethod
+    def _check_type(value: Any, expected_type: Type) -> bool:
+        """类型检查"""
+        # 处理泛型类型（如Dict, List等）
+        origin = get_origin(expected_type)
+        if origin is None:
+            return isinstance(value, expected_type)
+
+        # 处理Dict类型
+        if origin is dict:
+            args = get_args(expected_type)
+            key_type, value_type = args[0], args[1]
+            return (
+                isinstance(value, dict)
+                and all(isinstance(k, key_type) for k in value.keys())
+                and all(isinstance(v, value_type) for v in value.values())
             )
-            self.migrate(file_version)
-            self._data["__version__"] = self.current_version
-            self.save()
 
-    def migrate(self, from_version: str):
-        """执行版本迁移"""
-        # 创建备份（重要！）
-        backup_path = self.file_path.with_suffix(".bak")
-        shutil.copyfile(self.file_path, backup_path)
-        self.log_system.logger.debug(f"已创建备份文件: {backup_path}")
+        # 可以在此添加其他泛型类型的处理
+        return isinstance(value, origin)
 
-        # 版本升级路线图
-        migration_path = {}
+    def __setattr__(self, name, value):
+        """属性设置时的类型检查"""
+        if name in self.__fields__:
+            field_type = self.__fields__[name]["type"]
+            if not self._check_type(value, field_type):
+                raise ConfigTypeError(
+                    f"字段 '{name}' 类型错误，应为 {field_type}，实际为 {type(value)}"
+                )
+        super().__setattr__(name, value)
 
-        # 逐步执行升级
-        current_v = from_version
-        while current_v in migration_path:
-            migration_func = migration_path[current_v]
-            new_version = migration_func()
-            self.log_system.logger.debug(f"从 {current_v} 迁移到 {new_version}")
-            current_v = new_version
+    def update(self, **kwargs):
+        """批量更新配置"""
+        for name, value in kwargs.items():
+            if name not in self.__fields__:
+                raise ConfigError(f"无效配置项: {name}")
+            setattr(self, name, value)
 
-    def _validate(self, data: Optional[Dict] = None) -> None:
-        """配置数据校验"""
-        data = data or self._data
-        errors = []
-
-        for key, expected_type in self.schema.items():
-            value = self.get(key)
-            if not isinstance(value, expected_type):
-                errors.append(f"配置项 '{key}' 类型错误，应为 {expected_type.__name__}")
-
-        if errors:
-            raise ConfigValidationError("\n".join(errors))
-
-    def _save(self) -> None:
-        """内部保存方法（首次创建时使用）"""
-        try:
-            with open(self.file_path, "w", encoding="utf-8") as f:
-                json.dump(self._data, f, indent=4, ensure_ascii=False)
-        except (IOError, OSError) as e:
-            raise ConfigError(f"创建配置文件失败: {str(e)}") from e
-
-    @property
-    def data(self) -> Dict:
-        """返回配置数据的副本"""
-        return self._data.copy()
-
-
-if __name__ == "__main__":
-    # 使用示例
-    config_schema = {"database.host": str, "database.port": int, "debug": bool}
-
-    default_config = {
-        "database": {"host": "localhost", "port": 3306, "user": "admin"},
-        "debug": False,
-    }
-
-    try:
-        # 初始化配置管理器
-        config = JSONConfig(
-            file_path="~/myapp/config.json",
-            default_config=default_config,
-            schema=config_schema,
-        )
-
-        # 加载配置
-        config.load()
-
-        # 获取配置项
-        print("当前数据库端口:", config.get("database.port"))
-
-        # 修改配置
-        config.set("database.port", 3307)
-        config.set("new_feature.enabled", True)
-
-        # 保存配置
-        config.save()
-
-        # 类型校验示例（会抛出异常）
-        # config.set("debug", "true")  # 错误类型
-        # config.save()
-
-    except ConfigError as e:
-        print(f"配置操作失败: {str(e)}")
+    def print_config(self):
+        """打印当前配置"""
+        print("当前配置：")
+        for name, field_info in self.__fields__.items():
+            print(f"{name} ({field_info['type'].__name__}):")
+            print(f"  值: {getattr(self, name)}")
+            if field_info["description"]:
+                print(f"  描述: {field_info['description']}")
+            print()

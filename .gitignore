@@ -28,7 +28,7 @@ MANIFEST
 
 # Test file
 logs/
-config.json
+config.yml
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -1,3 +1,3 @@
-def main(debug: bool) -> None:
+def main() -> None:
     """UI主程序"""
     pass
