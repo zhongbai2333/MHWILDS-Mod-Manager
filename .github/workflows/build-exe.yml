@@ -41,17 +41,17 @@ jobs:
         } else {
           $version = "sha-${{ github.sha }}"
         }
-        pyinstaller --onefile --name=MyApp-$version --clean main.py
+        pyinstaller --onefile --name=MHWildsModManager-$version --clean __main__.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: MyApp-Build
-        path: dist\MyApp-*.exe  # 通配符匹配带版本号的文件
+        name: MHWildsModManager-Build
+        path: dist\MHWildsModManager-*.exe  # 通配符匹配带版本号的文件
 
     - name: Publish to Release
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref_name }}
-        files: dist/MyApp-*.exe
+        files: dist/MHWildsModManager-*.exe
