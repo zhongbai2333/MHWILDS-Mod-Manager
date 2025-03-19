@@ -2,8 +2,8 @@ name: Auto Build Python EXE
 
 on:
   push:
-    branches: [ "main" ]  # 普通提交到 main 分支时触发
-    tags: [ "v*" ]        # 同时监听 v 开头的 tag
+    branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
 
 jobs:
@@ -35,19 +35,18 @@ jobs:
 
     - name: Build Executable
       run: |
-        # 动态版本号处理（有tag用tag，无tag用commit SHA）
         if ("${{ github.ref_type }}" -eq "tag") {
           $version = "v${{ github.ref_name }}"
         } else {
           $version = "sha-${{ github.sha }}"
         }
-        pyinstaller --onefile --name=MHWildsModManager-$version --clean __main__.py
+        pyinstaller --onefile --add-data "mod_manage/lang/*.yml;mod_manage/lang" --name=MHWildsModManager-$version --clean __main__.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: MHWildsModManager-Build
-        path: dist\MHWildsModManager-*.exe  # 通配符匹配带版本号的文件
+        path: dist\MHWildsModManager-*.exe
 
     - name: Publish to Release
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')

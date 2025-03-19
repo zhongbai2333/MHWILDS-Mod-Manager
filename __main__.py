@@ -1,7 +1,10 @@
 import argparse
 import sys
 
-from mod_manage import CORE_VERSION, UI_VERSION, GlobalContext, core_main, ui_main
+from mod_manage.constants import CORE_VERSION, UI_VERSION
+from mod_manage.context import GlobalContext
+from mod_manage.manage_core import core_main
+from mod_manage.manage_ui import ui_main
 
 
 if __name__ == "__main__":

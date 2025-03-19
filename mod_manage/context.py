@@ -1,6 +1,7 @@
 from logging import Logger
 
-from mod_manage import LogSystem, BaseConfig, Field, ConfigError
+from .log_system import LogSystem
+from .storge_system import BaseConfig, Field, ConfigError
 
 
 class Config(BaseConfig):

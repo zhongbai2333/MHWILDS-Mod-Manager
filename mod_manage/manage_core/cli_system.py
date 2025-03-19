@@ -7,12 +7,10 @@ from ..i18n import i18n, t
 class CliSystem(object):
     def __init__(self):
         self.log_system = GlobalContext.get_logger()
-        self.config = GlobalContext.get_config
+        self.config = GlobalContext.get_config()
         # 配置语言
         if not self.config.language:
             self._setup_lang()
-        else:
-            i18n.set_language(self.config.language)
         self._start_cli_program()
 
     def _setup_lang(self):
