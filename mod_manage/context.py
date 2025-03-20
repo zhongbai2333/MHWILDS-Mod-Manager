@@ -36,17 +36,17 @@ class Config(BaseConfig):
 
 class GlobalContext(object):
     def __init__(self, debug: bool):
-        global log_system, config
-        log_system = LogSystem(debug=debug)
+        global _log_system, _config
+        _log_system = LogSystem(debug=debug)
         try:
-            config = Config.load()
+            _config = Config.load()
         except ConfigError as e:
-            log_system.logger.error(f"配置操作失败: {str(e)}")
+            _log_system.logger.error(f"配置操作失败: {str(e)}")
 
     @staticmethod
     def get_logger() -> Logger:
-        return log_system.logger
+        return _log_system.logger
 
     @staticmethod
     def get_config() -> Config:
-        return config
+        return _config

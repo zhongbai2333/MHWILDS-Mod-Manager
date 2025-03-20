@@ -3,7 +3,7 @@ welcome:
   welcome_cli: "怪物猎人：荒野 模组管理器 命令行版本正在启动..."
 
 cli:
-  wait_press: "等待输入命令（数字）："
+  wait_press: "等待输入命令（数字）[Ctrl+C 退出程序]："
   unknown_num: "未知的命令！"
   menu: | 
     ==菜单==
@@ -17,3 +17,11 @@ cli:
     2. 安装
     3. 更新
     4. 卸载
+  game_menu: "请输入游戏路径："
+  nexus_menu: |
+    ==Nexus 管理==
+
+github:
+  cant_get_release: "无法找到任何Release"
+  cant_get: "请求失败, Code: {code} Reason: {reason}"
+  need_update: "你的Ref框架版本过时了! 最新版本为 {latest_version}, 你的版本为 {version}"
