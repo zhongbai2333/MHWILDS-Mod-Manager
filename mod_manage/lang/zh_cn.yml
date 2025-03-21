@@ -14,9 +14,15 @@ cli:
   ref_menu: |
     ==REFramework 管理==
     1. 获取版本列表
-    2. 安装
-    3. 更新
+    2. 安装 / 更新 / 降级
     4. 卸载
+  ref_info: | 
+    名称：{name}
+    版本：{version} ({tag_name})
+    上传日期：{time}
+    下载链接：{url}
+  ref_list_wait: "页数：{page} / {all_pages} [p <page> 翻页, i <version> 安装] "
+  ref_search_wait: "是否安装该版本? [y/N] "
   game_menu: "请输入游戏路径："
   nexus_menu: |
     ==Nexus 管理==
@@ -25,3 +31,5 @@ github:
   cant_get_release: "无法找到任何Release"
   cant_get: "请求失败, Code: {code} Reason: {reason}"
   need_update: "你的Ref框架版本过时了! 最新版本为 {latest_version}, 你的版本为 {version}"
+  get_error: "请求发生错误：{reason}"
+  json_error: "响应内容不是有效的 JSON 格式"
