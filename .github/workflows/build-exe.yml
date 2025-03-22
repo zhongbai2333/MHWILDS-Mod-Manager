@@ -33,15 +33,43 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
+    - name: Download UPX
+      run: |
+        $url = "https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-win64.zip"
+        Invoke-WebRequest -Uri $url -OutFile upx.zip
+        Expand-Archive -Path upx.zip -DestinationPath upx
+
     - name: Build Executable
       run: |
+        $upxDir = "$pwd\upx\upx-5.0.0-win64"
+        
+        if (Test-Path "$upxDir\upx.exe") {
+            icacls "$upxDir\upx.exe" /grant Everyone:F
+        }
+
         if ("${{ github.ref_type }}" -eq "tag") {
           $version = "v${{ github.ref_name }}"
         } else {
           $version = "sha-${{ github.sha }}"
         }
-        pyinstaller --onefile --add-data "mod_manage/lang/*.yml;mod_manage/lang" --name=MHWildsModManager-noGUI-$version --exclude-module mod_manage.manage_ui --upx-dir --clean cli_entry.py
-        pyinstaller --onefile --add-data "mod_manage/lang/*.yml;mod_manage/lang" -w --upx-dir --name=MHWildsModManager-$version --clean gui_entry.py
+        
+        # CLI版本构建命令
+        pyinstaller --onefile `
+          --add-data "mod_manage/lang/*.yml;mod_manage/lang" `
+          --name=MHWildsModManager-noGUI-$version `
+          --exclude-module mod_manage.manage_ui `
+          --upx-dir "$upxDir" `
+          --clean `
+          cli_entry.py
+
+        # GUI版本构建命令
+        pyinstaller --onefile `
+          --add-data "mod_manage/lang/*.yml;mod_manage/lang" `
+          -w `
+          --upx-dir "$upxDir" `
+          --name=MHWildsModManager-$version `
+          --clean `
+          gui_entry.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
