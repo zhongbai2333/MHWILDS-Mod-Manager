@@ -80,7 +80,7 @@ class CliSystem(object):
         """获取ref版本列表"""
         page = int(page) if page else 1
         releases_list = self._ref_core.get_release_list_page(5, page)
-        for release in releases_list:
+        for release in releases_list[::-1]:
             self._log_system.info(
                 t(
                     "cli.ref_info",

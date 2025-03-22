@@ -7,7 +7,7 @@ from mod_manage.manage_core import core_main
 from mod_manage.manage_ui import ui_main
 
 
-if __name__ == "__main__":
+def main():
     # 参数解析器配置
     parser = argparse.ArgumentParser(
         description="MHWilds Mod Manager",

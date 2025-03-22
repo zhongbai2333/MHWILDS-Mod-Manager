@@ -40,7 +40,8 @@ jobs:
         } else {
           $version = "sha-${{ github.sha }}"
         }
-        pyinstaller --onefile --add-data "mod_manage/lang/*.yml;mod_manage/lang" --name=MHWildsModManager-$version --clean __main__.py
+        pyinstaller --onefile --add-data "mod_manage/lang/*.yml;mod_manage/lang" --name=MHWildsModManager-onGUI-$version --clean cli_entry.py
+        pyinstaller --onefile --add-data "mod_manage/lang/*.yml;mod_manage/lang" --name=MHWildsModManager-$version --clean gui_entry.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4

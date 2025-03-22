@@ -1,7 +1,7 @@
 welcome:
   choose_language: "已选择中文..."
   init: "怪物猎人：荒野 模组管理器 命令行版本正在初始化..."
-  welcome_cli: "怪物猎人：荒野 模组管理器 命令行版本初始化完成!2"
+  welcome_cli: "怪物猎人：荒野 模组管理器 命令行版本初始化完成!"
 
 cli:
   wait_press: "等待输入命令（数字）[Ctrl+C 退出程序]: "
