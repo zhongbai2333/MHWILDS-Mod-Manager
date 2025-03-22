@@ -3,8 +3,6 @@ import sys
 
 from mod_manage.constants import CORE_VERSION, UI_VERSION
 from mod_manage.context import GlobalContext
-from mod_manage.manage_core import core_main
-from mod_manage.manage_ui import ui_main
 
 
 def main():
@@ -39,9 +37,12 @@ def main():
     GlobalContext(debug_mode)
 
     if args.core:
+        from mod_manage.manage_core import core_main
         # 纯命令行模式
         core_main(core=args.core)
     else:
+        from mod_manage.manage_core import core_main
+        from mod_manage.manage_ui import ui_main
         # 默认混合模式
         core_main()
         ui_main()
