@@ -26,7 +26,7 @@ class RefManage(object):
             release_list.append(
                 [
                     release.get("name", None),
-                    str(self._extract_version(release.get("tag_name", None))),
+                    str(self.extract_version(release.get("tag_name", None))),
                     release.get("tag_name", None),
                     release.get("published_at", None),
                     release.get("assets", None)[3]
@@ -45,11 +45,11 @@ class RefManage(object):
 
         for item in self._releases:
             try:
-                current_version = self._extract_version(item["tag_name"])
+                current_version = self.extract_version(item["tag_name"])
                 if current_version == target:
                     return [
                         item.get("name", None),
-                        str(self._extract_version(item.get("tag_name", None))),
+                        str(self.extract_version(item.get("tag_name", None))),
                         item.get("tag_name", None),
                         item.get("published_at", None),
                         item.get("assets", None)[3].get("browser_download_url", None),
@@ -59,6 +59,9 @@ class RefManage(object):
         return None  # 未找到匹配项
 
     def install_ref(self) -> None:
+        pass
+
+    def uninstall_ref(self) -> None:
         pass
 
     def _get_release_list(self) -> None:
@@ -71,15 +74,17 @@ class RefManage(object):
             if response.status_code == 200:
                 self._releases = response.json()
 
+                self._log_system.info(t("cli.ref_getted"))
+
                 if not self._releases:
                     self._log_system.warning(t("github.cant_get_release"))
                     return
 
                 latest_release = self._releases[0]
-                latest_version = self._extract_version(
+                latest_version = self.extract_version(
                     latest_release.get("tag_name", None)
                 )
-                now_verison = self._extract_version(self._config.installed_rf_version)
+                now_verison = self.extract_version(self._config.installed_ref_version)
 
                 if not now_verison:
                     return
@@ -107,7 +112,7 @@ class RefManage(object):
         except json.JSONDecodeError:
             self._log_system.error(t("github.json.error"))
 
-    def _extract_version(self, tag) -> int:
+    def extract_version(self, tag) -> int:
         if not tag:
             return
         parts = tag.split("-")

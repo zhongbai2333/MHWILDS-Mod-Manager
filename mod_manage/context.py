@@ -20,8 +20,9 @@ class Config(BaseConfig):
     # ---------- [游戏路径] ----------
     game_path: str = Field(default="", description="游戏安装根目录路径")
 
-    # ---------- [REF框架] ----------
-    installed_rf_version: str = Field(default="", description="已安装的REF框架版本")
+    # ---------- [RE框架] ----------
+    installed_ref_version: str = Field(default="", description="已安装的RE框架版本")
+    installed_ref_file: list = Field(default=[], description="已安装的RE框架相关文件")
 
     # ---------- [Github] ----------
     proxy_mode: bool = Field(default=False, description="Github 是否启用代理")

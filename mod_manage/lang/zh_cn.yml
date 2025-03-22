@@ -1,10 +1,11 @@
 welcome:
   choose_language: "已选择中文..."
-  welcome_cli: "怪物猎人：荒野 模组管理器 命令行版本正在启动..."
+  init: "怪物猎人：荒野 模组管理器 命令行版本正在初始化..."
+  welcome_cli: "怪物猎人：荒野 模组管理器 命令行版本初始化完成!2"
 
 cli:
-  wait_press: "等待输入命令（数字）[Ctrl+C 退出程序]："
-  unknown_num: "未知的命令！"
+  wait_press: "等待输入命令（数字）[Ctrl+C 退出程序]: "
+  unknown_num: "未知的命令!"
   menu: | 
     ==菜单==
     1. REFramework 管理
@@ -13,23 +14,37 @@ cli:
     4. Mod 管理
   ref_menu: |
     ==REFramework 管理==
-    1. 获取版本列表
-    2. 安装 / 更新 / 降级
-    4. 卸载
+    1. 安装 / 更新 / 降级
+    2. 卸载
+    3. 是否启用 Github Proxy 下载加速
+  ref_getting: "正在获取Re框架Github相关数据..."
+  ref_getted: "已成功获取!"
   ref_info: | 
     名称：{name}
     版本：{version} ({tag_name})
     上传日期：{time}
     下载链接：{url}
-  ref_list_wait: "页数：{page} / {all_pages} [p <page> 翻页, i <version> 安装] "
-  ref_search_wait: "是否安装该版本? [y/N] "
-  game_menu: "请输入游戏路径："
+  ref_installed: "您已安装Re框架版本为: {version}, 最新版本为 {new_version} ({time})"
+  ref_list_wait: "页数：{page} / {all_pages} [p <page> 翻页, i <version> 安装 / 更新]: "
+  ref_search_wait: "是否安装该版本? [y/N]: "
+  github_proxy: "是否启用 Github Proxy 加速? [y/N]: "
+  github_proxy_url: "请输入 Github Proxy 加速地址 [{url}]: "
+  game_menu: "请输入游戏路径 [q 取消修改]: "
+  game_force_save: "是否强制保存? [y/N]: "
+  game_save: "保存成功!"
+  game_path_known: "您的游戏路径: {path}"
   nexus_menu: |
     ==Nexus 管理==
+
+core:
+  game_error_path: "路径不存在"
+  game_error_not_folder: "路径指向的不是文件夹"
+  game_error_not_game_path: "目录中未找到MonsterHunterWilds.exe"
+  game_success: "有效路径"
 
 github:
   cant_get_release: "无法找到任何Release"
   cant_get: "请求失败, Code: {code} Reason: {reason}"
-  need_update: "你的Ref框架版本过时了! 最新版本为 {latest_version}, 你的版本为 {version}"
+  need_update: "你的Re框架版本过时了! 最新版本为 {latest_version}, 你的版本为 {version}"
   get_error: "请求发生错误：{reason}"
   json_error: "响应内容不是有效的 JSON 格式"
