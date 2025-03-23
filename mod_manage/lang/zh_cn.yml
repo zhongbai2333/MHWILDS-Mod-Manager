@@ -27,6 +27,11 @@ cli:
   ref_installed: "您已安装Re框架版本为: {version}, 最新版本为 {new_version} ({time})"
   ref_list_wait: "页数：{page} / {all_pages} [p <page> 翻页, i <version> 安装 / 更新]: "
   ref_search_wait: "是否安装该版本? [y/N]: "
+  ref_install_success: "REFramework v{version} 安装成功!"
+  ref_install_error: "REFramework 安装失败! {version} 版本不存在!"
+  ref_uninstall_wait: "是否确认删除 REFramework? [y/N]: "
+  ref_uninstall_success: "REFramework 卸载成功!"
+  ref_uninstall_error: "REFramework 卸载失败! REFramework 未安装!"
   github_proxy: "是否启用 Github Proxy 加速? [y/N]: "
   github_proxy_url: "请输入 Github Proxy 加速地址 [{url}]: "
   game_menu: "请输入游戏路径 [q 取消修改]: "
@@ -35,12 +40,16 @@ cli:
   game_path_known: "您的游戏路径: {path}"
   nexus_menu: |
     ==Nexus 管理==
+    1. API Key 登录
+    2. SSO 登录
+    3. 删除登录信息
 
 core:
   game_error_path: "路径不存在"
   game_error_not_folder: "路径指向的不是文件夹"
   game_error_not_game_path: "目录中未找到MonsterHunterWilds.exe"
   game_success: "有效路径"
+  game_path_error: "缺失游戏路径!"
 
 github:
   cant_get_release: "无法找到任何Release"
@@ -48,3 +57,28 @@ github:
   need_update: "你的Re框架版本过时了! 最新版本为 {latest_version}, 你的版本为 {version}"
   get_error: "请求发生错误：{reason}"
   json_error: "响应内容不是有效的 JSON 格式"
+
+downloader:
+  download_vail_fail: "下载文件校验失败，文件可能不完整"
+  install_success: "安装成功"
+  install_failed: "安装失败，错误：{error}"
+  download_start: "开始下载：{url}"
+  download_success: "下载成功"
+  download_failed: "下载失败，错误：{error}"
+  download_failed_short: "下载失败"
+  unzip_start: "开始解压文件：{path}"
+  unzip_success: "解压成功"
+  unzip_fail: "解压失败"
+  invalid_zip: "无效的 ZIP 文件"
+  copy_error: "复制文件失败，源：{src}，目标：{dst}，错误：{error}"
+  overwriting_dir: "正在覆盖目录：{path}"
+  skipping_dir: "跳过目录（已存在）：{path}"
+  copied_dir: "已复制目录，源：{src}，目标：{dst}"
+  source_missing: "源文件不存在：{path}"
+  overwriting_file: "正在覆盖文件：{path}"
+  skipping_file: "跳过文件（已存在）：{path}"
+  copied_file: "已复制文件，源：{src}，目标：{dst}"
+  start_cleanup: "开始清理旧文件"
+  cleaned_file: "已清理文件：{path}"
+  cleaned_dir: "已清理目录：{path}"
+  cleanup_failed: "清理失败，路径：{path}，错误：{error}"

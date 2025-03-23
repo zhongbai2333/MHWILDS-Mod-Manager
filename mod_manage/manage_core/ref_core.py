@@ -1,14 +1,18 @@
+import os
 import json
 import requests
+from pathlib import Path
 
 from ..context import GlobalContext
 from ..i18n import t
+from .download_helper import FileUpdater
 
 
 class RefManage(object):
     def __init__(self):
         self._log_system = GlobalContext.get_logger()
         self._config = GlobalContext.get_config()
+        self._file_downloader = FileUpdater()
         self._url = "https://api.github.com/repos/praydog/REFramework-nightly/releases"
         self._releases = None
         self._get_release_list()
@@ -29,8 +33,7 @@ class RefManage(object):
                     str(self.extract_version(release.get("tag_name", None))),
                     release.get("tag_name", None),
                     release.get("published_at", None),
-                    release.get("assets", None)[3]
-                    .get("browser_download_url", None),
+                    release.get("assets", None)[3].get("browser_download_url", None),
                 ]
             )
         return release_list
@@ -58,11 +61,32 @@ class RefManage(object):
                 continue  # 跳过无法提取版本号的项
         return None  # 未找到匹配项
 
-    def install_ref(self) -> None:
-        pass
+    def install_ref(self, version: str) -> bool:
+        """安装Re框架"""
+        if not self._config.game_path:
+            self._log_system.error(t("core.game_path_error"))
+            return False
+        release = self.search_release(version)
+        if not release:
+            return False
+        url = release[4]
+        if self._config.proxy_mode:
+            url = self._config.proxy_url + url
+        copy_rules = [{"src": "dinput8.dll", "dst": "dinput8.dll"}]
+        self._file_downloader.install_from_zip(url, copy_rules)
+        self._config.installed_ref_version = release[2]
+        self._config.save()
+        return True
 
     def uninstall_ref(self) -> None:
-        pass
+        """卸载Re框架"""
+        if not self._config.game_path:
+            self._log_system.error(t("core.game_path_error"))
+            return False
+        os.remove(Path(self._config.game_path) / "dinput8.dll")
+        self._config.installed_ref_version = ""
+        self._config.save()
+        return True
 
     def _get_release_list(self) -> None:
         """初始化ref版本列表文件"""

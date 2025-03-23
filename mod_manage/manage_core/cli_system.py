@@ -1,5 +1,7 @@
 import sys
 
+from urllib.parse import urlparse, urlunparse
+
 from .ref_core import RefManage
 from ..context import GlobalContext
 from ..i18n import i18n, t
@@ -133,25 +135,48 @@ class CliSystem(object):
         }
         num = input(t("cli.ref_search_wait")).lower().split()
         if len(num) >= 1 and num[0] in command_list.keys():
-            command_list[num[0]](version if len(num) >= 2 and num[1] == "y" else "1")
+            command_list[num[0]](version if len(num) >= 1 and num[0] == "y" else "1")
         else:
             self._log_system.warning(t("cli.unknown_num"))
             self._ref_release_page_manage("1")
 
     def _ref_start_install(self, version: str) -> None:
-        pass
+        if self._ref_core.install_ref(version):
+            self._log_system.info(t("cli.ref_install_success", version=version))
+        else:
+            self._log_system.error(t("cli.ref_install_error", version=version))
 
     def _ref_start_uninstall(self, _) -> None:
-        pass
+        num = input(t("cli.ref_uninstall_wait")).lower()
+        if not num or num != "y":
+            return
+        if self._ref_core.uninstall_ref():
+            self._log_system.info(t("cli.ref_uninstall_success"))
+        else:
+            self._log_system.error(t("cli.ref_uninstall_error"))
 
     def _github_proxy_set(self, _) -> None:
         num = input(t("cli.github_proxy"))
         if not num or num != "y":
+            self._config.proxy_mode = False
+            self._config.save()
             return
         self._config.proxy_mode = True
         url = input(t("cli.github_proxy_url", url=self._config.proxy_url))
         if url != "":
-            self._config.proxy_url = url
+            parsed = urlparse(url)
+
+            # 处理路径部分
+            if not parsed.path.endswith("/"):
+                # 保留原始路径内容，仅在末尾追加斜杠
+                new_path = parsed.path + "/"
+            else:
+                new_path = parsed.path
+
+            # 重建URL对象
+            normalized = parsed._replace(path=new_path)
+
+            self._config.proxy_url = urlunparse(normalized)
         self._config.save()
 
     def _game_manage(self) -> None:

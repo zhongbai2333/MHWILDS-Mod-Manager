@@ -14,15 +14,15 @@ class Config(BaseConfig):
     animation: bool = Field(default=True, description="是否启用动画效果")
 
     # ---------- [Nexusmods] ----------
+    uuid: str = Field(default="", description="网站用户名")
+    connection_token: str = Field(default="", description="网站Token")
     api: str = Field(default="", description="API密钥（从nexusmods获取）")
-    username: str = Field(default="", description="网站用户名")
 
     # ---------- [游戏路径] ----------
     game_path: str = Field(default="", description="游戏安装根目录路径")
 
     # ---------- [RE框架] ----------
     installed_ref_version: str = Field(default="", description="已安装的RE框架版本")
-    installed_ref_file: list = Field(default=[], description="已安装的RE框架相关文件")
 
     # ---------- [Github] ----------
     proxy_mode: bool = Field(default=False, description="Github 是否启用代理")
