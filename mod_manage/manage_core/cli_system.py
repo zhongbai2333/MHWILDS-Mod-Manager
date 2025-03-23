@@ -1,8 +1,10 @@
 import sys
+import asyncio
 
 from urllib.parse import urlparse, urlunparse
 
 from .ref_core import RefManage
+from .sso_login import main as sso_main
 from ..context import GlobalContext
 from ..i18n import i18n, t
 from ..tools import validate_game_path
@@ -197,7 +199,26 @@ class CliSystem(object):
         self._log_system.info(t("cli.game_save"))
 
     def _nexus_manage(self) -> None:
-        pass
+        self._log_system.info(t("cli.nexus_menu"))
+        command_list = {
+            "1": self._nexus_api
+        }
+        num = input(t("cli.wait_press"))
+        if num in command_list.keys():
+            command_list[num]()
+        else:
+            self._log_system.warning(t("cli.unknown_num"))
+
+    def _nexus_api(self) -> None:
+        num = input(t("cli.nexus_api"))
+        if not num and num == "q":
+            return
+        self._config.api = num
+        self._config.save()
+        self._log_system(t("cli.nexus_api_fin"))
+
+    def _nexus_sso(self) -> None:
+        asyncio.run(sso_main())
 
     def _mod_manage(self) -> None:
         pass

@@ -93,7 +93,3 @@ async def main():
         # 这里可以使用client.api_key调用Nexus API
     else:
         print("未能获取API密钥")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

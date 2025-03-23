@@ -43,6 +43,8 @@ cli:
     1. API Key 登录
     2. SSO 登录
     3. 删除登录信息
+  nexus_api: "请输入您的Nexus API, 您可以从 https://www.nexusmods.com/users/myaccount?tab=api%20access 获取 [q 取消修改]: "
+  nexus_api_fin: "保存完成!"
 
 core:
   game_error_path: "路径不存在"
